@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -24,64 +23,71 @@ namespace SplitPlaylist
 
         private void bGo_Click(object sender, EventArgs e)
         {
-            Controller controller = new()
-            {
-                URL = eURL.Text,
-                Artist = eArtist.Text,
-                Pattern = ePattern.Text,
-                Tracks = eTracks.Lines,
-                Extension = cbExtension.Text,
-                IsURL = rbURL.Checked
-            };
-            //Prompt for file names
-            if (!controller.Tracks.Any()) {
-                controller.Tracks = OpenFile();
-                if (!controller.Tracks.Any())
-                    return;
-            }
-            var saveDialog = new CommonOpenFileDialog
-            {
-                IsFolderPicker = true,
-                Title = "Select where to save the playlist to"
-            };
-            if (saveDialog.ShowDialog() != CommonFileDialogResult.Ok)
-                return;
-            controller.PathToSaveTo = saveDialog.FileName;
-            //Main playlist processing
-            Cursor = Cursors.WaitCursor;
-            List<Process> processes = new List<Process>();
             try {
-                processes = controller.ProcessTracks();
-                progressbar.Maximum = processes.Count;
-                progressbar.Visible = true;
-                progressbar.Visible = true;
-                List<Process> finished = new List<Process>();
-                while (processes.Count > 0) {
-                    foreach (var process in processes) {
-                        try {
-                            var code = process.ExitCode;
+                Controller controller = new()
+                {
+                    URL = eURL.Text,
+                    Artist = eArtist.Text,
+                    Pattern = ePattern.Text,
+                    Tracks = eTracks.Lines,
+                    Extension = cbExtension.Text,
+                    IsURL = rbURL.Checked,
+                    DeleteExisting = cDeleteExisting.Checked,
+                    TimeOrdering = cUseTimeOrdering.Checked
+                };
+                //Prompt for file names
+                if (!controller.Tracks.Any()) {
+                    controller.Tracks = OpenFile();
+                    if (!controller.Tracks.Any())
+                        return;
+                }
+                var saveDialog = new CommonOpenFileDialog
+                {
+                    IsFolderPicker = true,
+                    Title = "Select where to save the playlist to"
+                };
+                if (saveDialog.ShowDialog() != CommonFileDialogResult.Ok)
+                    return;
+                controller.PathToSaveTo = saveDialog.FileName;
+                //Main playlist processing
+                Cursor = Cursors.WaitCursor;
+                List<Process> processes = new();
+                try {
+                    processes = controller.ProcessTracks();
+                    progressbar.Maximum = processes.Count;
+                    progressbar.Visible = true;
+                    progressbar.Visible = true;
+                    List<Process> finished = new();
+                    while (processes.Count > 0) {
+                        foreach (var process in processes) {
+                            try {
+                                var code = process.ExitCode;
+                            }
+                            catch {
+                                continue;
+                            }
+                            processes.Remove(process);
+                            finished.Add(process);
+                            progressbar.Value = finished.Count;
+                            break;
                         }
-                        catch {
-                            continue;
-                        }
-                        processes.Remove(process);
-                        finished.Add(process);
-                        progressbar.Value = finished.Count;
-                        break;
                     }
                 }
-            }
-            finally {
-                try {
-                    Cursor = Cursors.Default;
-                    controller.Cleanup(processes);
+                finally {
+                    try {
+                        Cursor = Cursors.Default;
+                        controller.Cleanup(processes);
+                    }
+                    catch (Exception ex) {
+                        MessageBox.Show(ex.Message);
+                    }
                 }
-                catch (Exception ex) {
-                    MessageBox.Show(ex.Message);
-                }
+                progressbar.Value = progressbar.Minimum;
+                progressbar.Visible = false;
             }
-            progressbar.Value = progressbar.Minimum;
-            progressbar.Visible = false;
+            catch (Exception ex) {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void rbURL_CheckedChanged(object sender, EventArgs e) {
@@ -90,10 +96,12 @@ namespace SplitPlaylist
         }
 
         private void bOpenFile_Click(object sender, EventArgs e) {
-            eTracks.Lines = OpenFile();
+            var tracks = OpenFile();
+            if (tracks.Any())
+                eTracks.Lines = tracks;
         }
-        private string[] OpenFile() {
-            string[] ret = { };
+        private static string[] OpenFile() {
+            string[] ret = Array.Empty<string>();
             var fileDialog = new OpenFileDialog
             {
                 Title = "Select a list of tracks"

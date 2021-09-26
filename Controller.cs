@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Globalization;
 using System.Security.Permissions;
 
@@ -15,8 +13,8 @@ namespace SplitPlaylist {
                 return "00:00";
             return (EndTimeTime - StartTimeTime).ToString();
         }
-        protected DateTime StartTimeTime;
-        protected DateTime EndTimeTime;
+        public DateTime StartTimeTime { get; set; }
+        public DateTime EndTimeTime { get; set; }
         public string TrackName { get; set; }
         public string Artist { get; set; }
         public string StartTime { get; set; }
@@ -39,7 +37,7 @@ namespace SplitPlaylist {
                     throw new Exception($"Unrecognised variable name '{VarName}'");
             }
             //Check correct time format while parsing
-            DateTime dateTime = new DateTime();
+            DateTime dateTime = new();
             switch (VarName) {
                 case "$END":
                 case "$START": {
@@ -70,8 +68,10 @@ namespace SplitPlaylist {
         public string Extension { get; set; }
         public string[] Tracks { get; set; }
         public bool IsURL { get; set; }
+        public bool DeleteExisting { get; set; }
+        public bool TimeOrdering { get; set; }
         public List<Process> ProcessTracks() {
-            if (String.IsNullOrWhiteSpace(URL) || !Uri.IsWellFormedUriString(URL, UriKind.Absolute))
+            if (String.IsNullOrWhiteSpace(URL) || (!Uri.IsWellFormedUriString(URL, UriKind.Absolute) && IsURL))
                 throw new Exception("Must provide URL");
             var artists = Pattern.Contains("$ARTIST");
             var end = Pattern.Contains("$END");
@@ -86,8 +86,10 @@ namespace SplitPlaylist {
                     FileName = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "youtube-dl.exe"),
                     Arguments = args
                 };
-                Process process = new Process();
-                process.StartInfo = StartInfo;
+                Process process = new()
+                {
+                    StartInfo = StartInfo
+                };
                 process.Start();
                 process.WaitForExit();
                 switch (process.ExitCode) {
@@ -117,7 +119,7 @@ namespace SplitPlaylist {
                 tokens[^1] += c;
             }
             //Go through all the tokens and skip the bits of consistent text such as '-' chars and set track properties from the variables
-            var trackList = new List<Track>();
+            List<Track> trackList = new();
             foreach (var t in Tracks) {
                 var trackObj = new Track();
                 var track = t;
@@ -146,20 +148,25 @@ namespace SplitPlaylist {
                 trackList.Add(trackObj);
             }
             //The final track doesn't need an end time - will just continue to the end of the file
+            IEnumerable<Track> orderedTrackList = trackList;
+            if (TimeOrdering)
+                orderedTrackList = trackList.OrderBy(t => t.StartTimeTime);
             if (!end) {
-                for (var i = 0; i < trackList.Count; i++) {
-                    if (i < trackList.Count - 1)
-                        trackList[i].SetVar("$END", trackList[i + 1].StartTime);
+                for (var i = 0; i < orderedTrackList.Count(); i++) {
+                    if (i < orderedTrackList.Count() - 1)
+                        orderedTrackList.ElementAt(i).SetVar("$END", orderedTrackList.ElementAt(i + 1).StartTime);
                 }
             }
             //Launch all the ffmpeg processes
             var processes = new List<Process>();
-            for (var i = 0; i < trackList.Count; i++) {
-                var track = trackList[i];
-                var args = $"-i {SavePath} -ss {track.StartTime} -n";
+            for (var i = 0; i < orderedTrackList.Count(); i++) {
+                var zeros = new String('0', (int)Math.Log10(orderedTrackList.Count()) - (int)Math.Log10(i + 1));
+                var track = orderedTrackList.ElementAt(i);
+                var args = $"-i {SavePath} -ss {track.StartTime} ";
+                args += DeleteExisting ? "-y" : "-n";
                 if (!String.IsNullOrWhiteSpace(track.EndTime))
                     args += $" -t {track.Duration()}";
-                var filename = $"{i + 1} - {track.TrackName}.{Extension}";
+                var filename = $"{zeros}{i + 1} - {track.TrackName}.{Extension}";
                 args += $" \"{Path.Combine(PathToSaveTo, filename)}\"";
                 var  process = new Process()
                 {
@@ -167,7 +174,10 @@ namespace SplitPlaylist {
                     {
                         FileName = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "ffmpeg.exe"),
                         Arguments = args,
-                        CreateNoWindow = true
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = false,
+                        RedirectStandardInput = true
                     }
                 };
                 process.Start();
@@ -184,8 +194,12 @@ namespace SplitPlaylist {
                     continue;
                 }
             }
-            FileIOPermission file = new FileIOPermission(PermissionState.None);
-            file.AllLocalFiles = FileIOPermissionAccess.AllAccess;
+            if (IsURL)
+                return;
+            FileIOPermission file = new(PermissionState.None)
+            {
+                AllLocalFiles = FileIOPermissionAccess.AllAccess
+            };
             file.Demand();
             File.SetAttributes(SavePath, FileAttributes.Normal);
             File.Delete(SavePath);

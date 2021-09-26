@@ -47,16 +47,18 @@ namespace SplitPlaylist
             this.pSourceType = new System.Windows.Forms.Panel();
             this.bOpenFile = new System.Windows.Forms.Button();
             this.bOpenVideoFile = new System.Windows.Forms.Button();
+            this.cDeleteExisting = new System.Windows.Forms.CheckBox();
+            this.cUseTimeOrdering = new System.Windows.Forms.CheckBox();
             this.statusBar.SuspendLayout();
             this.pSourceType.SuspendLayout();
             this.SuspendLayout();
             // 
             // eTracks
             // 
-            this.eTracks.Location = new System.Drawing.Point(9, 219);
+            this.eTracks.Location = new System.Drawing.Point(9, 244);
             this.eTracks.Multiline = true;
             this.eTracks.Name = "eTracks";
-            this.eTracks.Size = new System.Drawing.Size(577, 290);
+            this.eTracks.Size = new System.Drawing.Size(577, 265);
             this.eTracks.TabIndex = 0;
             // 
             // eURL
@@ -87,6 +89,7 @@ namespace SplitPlaylist
             // lURL
             // 
             this.lURL.AutoSize = true;
+            this.lURL.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lURL.Location = new System.Drawing.Point(147, 85);
             this.lURL.Name = "lURL";
             this.lURL.Size = new System.Drawing.Size(28, 15);
@@ -214,11 +217,35 @@ namespace SplitPlaylist
             this.bOpenVideoFile.Visible = false;
             this.bOpenVideoFile.Click += new System.EventHandler(this.bOpenVideoFile_Click);
             // 
+            // cDeleteExisting
+            // 
+            this.cDeleteExisting.AutoSize = true;
+            this.cDeleteExisting.Location = new System.Drawing.Point(431, 171);
+            this.cDeleteExisting.Name = "cDeleteExisting";
+            this.cDeleteExisting.Size = new System.Drawing.Size(138, 19);
+            this.cDeleteExisting.TabIndex = 18;
+            this.cDeleteExisting.Text = "Delete Existing Tracks";
+            this.cDeleteExisting.UseVisualStyleBackColor = true;
+            // 
+            // cUseTimeOrdering
+            // 
+            this.cUseTimeOrdering.AutoSize = true;
+            this.cUseTimeOrdering.Checked = true;
+            this.cUseTimeOrdering.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cUseTimeOrdering.Location = new System.Drawing.Point(181, 198);
+            this.cUseTimeOrdering.Name = "cUseTimeOrdering";
+            this.cUseTimeOrdering.Size = new System.Drawing.Size(124, 19);
+            this.cUseTimeOrdering.TabIndex = 19;
+            this.cUseTimeOrdering.Text = "Use Time Ordering";
+            this.cUseTimeOrdering.UseVisualStyleBackColor = true;
+            // 
             // SplitPlaylist
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(593, 590);
+            this.Controls.Add(this.cUseTimeOrdering);
+            this.Controls.Add(this.cDeleteExisting);
             this.Controls.Add(this.bOpenVideoFile);
             this.Controls.Add(this.bOpenFile);
             this.Controls.Add(this.pSourceType);
@@ -265,6 +292,8 @@ namespace SplitPlaylist
         private System.Windows.Forms.Panel pSourceType;
         private System.Windows.Forms.Button bOpenFile;
         private System.Windows.Forms.Button bOpenVideoFile;
+        private System.Windows.Forms.CheckBox cDeleteExisting;
+        private System.Windows.Forms.CheckBox cUseTimeOrdering;
     }
 }
 
