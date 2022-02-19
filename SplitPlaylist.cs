@@ -12,48 +12,75 @@ namespace SplitPlaylist
     {
         public SplitPlaylist() {
             InitializeComponent();
-            string[] Extensions = { "aac", "flac", "mp3", "m4a", "opus", "vorbis", "wav" };
-            cbExtension.Items.AddRange(Extensions);
-            cbExtension.SelectedItem = "mp3";
+            InitExtensionsCombo(cbSpExtension);
+            InitExtensionsCombo(cbDExtension);
             progressbar.Visible = false;
             progressbar.Minimum = 0;
             MinimumSize = Size;
             MaximumSize = Size;
         }
-
+        private void InitExtensionsCombo(ComboBox cb, List<string>? ex = null, string def = "mp3") {
+            if (ex == null) {
+                ex = new List<string>();
+                string[] e = { "aac", "flac", "mp3", "m4a", "opus", "vorbis", "wav" };
+                ex.AddRange(e);
+            }
+            cb.Items.Clear();
+            ex.Sort();
+            cb.Items.AddRange(ex.ToArray());
+            cb.SelectedItem = def;
+        }
+        private string GetSavePath() {
+            var saveDialog = new CommonOpenFileDialog
+            {
+                IsFolderPicker = true,
+                Title = "Select where to save to"
+            };
+            if (saveDialog.ShowDialog() != CommonFileDialogResult.Ok) return "";
+            return saveDialog.FileName;
+        }
+        private string[] GetLines(TextBox e) {
+            var ret = e.Lines;
+            if (!ret.Any()) {
+                ret = OpenFile();
+            }
+            return ret;
+        }
         private void bGo_Click(object sender, EventArgs e)
         {
             try {
-                Controller controller = new()
+                string ytCom = eYTCom.Text;
+                string ffCom = eFFCom.Text;
+                if (ytCom == "") {
+                    ytCom = "yt-dlp";
+                }
+                if (ffCom == "") {
+                    ffCom = "ffmpeg";
+                }
+                Splitter splitter = new()
                 {
-                    URL = eURL.Text,
+                    URL = eSpURL.Text,
                     Artist = eArtist.Text,
                     Pattern = ePattern.Text,
-                    Tracks = eTracks.Lines,
-                    Extension = cbExtension.Text,
+                    Extension = cbSpExtension.Text,
                     IsURL = rbURL.Checked,
                     DeleteExisting = cDeleteExisting.Checked,
-                    TimeOrdering = cUseTimeOrdering.Checked
+                    TimeOrdering = cUseTimeOrdering.Checked,
+                    YTCommand = ytCom,
+                    FFCommand = ffCom
                 };
+                
                 //Prompt for file names
-                if (!controller.Tracks.Any()) {
-                    controller.Tracks = OpenFile();
-                    if (!controller.Tracks.Any())
-                        return;
-                }
-                var saveDialog = new CommonOpenFileDialog
-                {
-                    IsFolderPicker = true,
-                    Title = "Select where to save the playlist to"
-                };
-                if (saveDialog.ShowDialog() != CommonFileDialogResult.Ok)
-                    return;
-                controller.PathToSaveTo = saveDialog.FileName;
+                splitter.Tracks = GetLines(eTracks);
+                if (!splitter.Tracks.Any()) return;
+                splitter.PathToSaveTo = GetSavePath();
+                if (String.IsNullOrWhiteSpace(splitter.PathToSaveTo)) return;
+               
                 //Main playlist processing
                 Cursor = Cursors.WaitCursor;
                 List<Process> processes = new();
                 try {
-                    processes = controller.ProcessTracks();
+                    processes = splitter.ProcessTracks();
                     progressbar.Maximum = processes.Count;
                     progressbar.Visible = true;
                     progressbar.Visible = true;
@@ -76,7 +103,7 @@ namespace SplitPlaylist
                 finally {
                     try {
                         Cursor = Cursors.Default;
-                        controller.Cleanup(processes);
+                        splitter.Cleanup(processes);
                     }
                     catch (Exception ex) {
                         MessageBox.Show(ex.Message);
@@ -91,14 +118,18 @@ namespace SplitPlaylist
         }
 
         private void rbURL_CheckedChanged(object sender, EventArgs e) {
-            lURL.Text = rbURL.Checked ? "URL" : "File";
+            lSpURL.Text = rbURL.Checked ? "URL" : "File";
             bOpenVideoFile.Visible = !rbURL.Checked;
         }
 
+        private void OpenLines(TextBox e) {
+            var lines = OpenFile();
+            if (lines.Any())
+                e.Lines = lines;
+        }
+
         private void bOpenFile_Click(object sender, EventArgs e) {
-            var tracks = OpenFile();
-            if (tracks.Any())
-                eTracks.Lines = tracks;
+            OpenLines(eTracks);
         }
         private static string[] OpenFile() {
             string[] ret = Array.Empty<string>();
@@ -117,7 +148,50 @@ namespace SplitPlaylist
                 Title = "Select a list of tracks"
             };
             if (fileDialog.ShowDialog() == DialogResult.OK)
-                eURL.Text = fileDialog.FileName;
+                eSpURL.Text = fileDialog.FileName;
+        }
+
+        private void rbVideo_CheckedChanged(object sender, EventArgs e) {
+            if (rbVideo.Checked) {
+                var ex = new List<string>();
+                string[] eArr = { "mp4", "m4a", "webm", "mkv", "gif" };
+                ex.AddRange(eArr);
+                InitExtensionsCombo(cbDExtension, ex, "mp4");
+            }
+            else {
+                InitExtensionsCombo(cbDExtension);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e) {
+            OpenLines(eUrlList);
+        }
+
+        private void button1_Click(object sender, EventArgs e) {
+            try {
+                var downloader = new Downloader
+                {
+                    IsAudio = rbAudio.Checked,
+                    IsPlaylist = cPlaylist.Checked,
+                    Extension = cbDExtension.Text,
+                    URLs = eUrlList.Lines,
+                    YTCommand = "yt-dlp"
+                };
+                downloader.URLs = GetLines(eUrlList);
+                if (!downloader.URLs.Any()) return;
+                downloader.PathToSaveTo = GetSavePath();
+                if (String.IsNullOrWhiteSpace(downloader.PathToSaveTo)) return;
+                try {
+                    Cursor = Cursors.WaitCursor;
+                    downloader.Download();
+                }
+                finally {
+                    Cursor = Cursors.Default;
+                }
+            }
+            catch(Exception ex) {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

@@ -1,0 +1,4 @@
+URL=https://www.youtube.com/playlist?list=PLKzpt3zYOKYqQXc2n3xRR9eDmTohMh6xZ
+AUDIO=True
+PLAYLIST=True
+EXTENSION=mp3
