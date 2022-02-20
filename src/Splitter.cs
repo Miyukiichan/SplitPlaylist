@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Security.Permissions;
 using System.Security.AccessControl;
 
-namespace SplitPlaylist {
+namespace SplitPlaylist.src {
     public class Track {
         public string Duration() {
             if (String.IsNullOrWhiteSpace(EndTime))

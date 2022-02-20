@@ -1,0 +1,24 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="SplitPlaylist.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="YTCommand" Type="System.String" Scope="User">
+      <Value Profile="(Default)">yt-dlp</Value>
+    </Setting>
+    <Setting Name="FFCommand" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ffmpeg</Value>
+    </Setting>
+    <Setting Name="AudioFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)">mp3</Value>
+    </Setting>
+    <Setting Name="VideoFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)">mp4</Value>
+    </Setting>
+    <Setting Name="DeleteExistingTracks" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="TimeOrdering" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

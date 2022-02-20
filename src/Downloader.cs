@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace SplitPlaylist {
+namespace SplitPlaylist.src {
     class Downloader {
         public bool IsPlaylist { get; set; }
         public string Extension { get; set; }

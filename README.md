@@ -8,13 +8,7 @@ Make sure that your ffmpeg and yt-dlp exes are added as firewall exceptions. Oth
 
 ## TODO
 
-- Options menu to declutter the main pages 
-  - Default command paths
-  - Default video/audio formats
-  - Delete existing tracks
-  - Use time ordering
 - Implement progress bar for regular downloads
-- Add custom yt-dlp command path for regular downloads
 - Improve error handling of processes
 - Custom file name format
 - Support outputting to subdirectories using
@@ -27,3 +21,7 @@ Make sure that your ffmpeg and yt-dlp exes are added as firewall exceptions. Oth
 - Have optional limit to amount of processes at a time for batch processing rather than all at once - opens up option for sequential processing
 - Capture yt-dlp stdout and put it in a dialog rather than launching a terminal
 - Possibly put a sleep when checking all the processes so to not overload the CPU
+
+## Icons
+
+<a href="https://www.flaticon.com/free-icons/settings" title="settings icons">Settings icons created by Pixel perfect - Flaticon</a>
