@@ -94,5 +94,29 @@ namespace SplitPlaylist.Properties {
                 this["TimeOrdering"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IncludeMetadata {
+            get {
+                return ((bool)(this["IncludeMetadata"]));
+            }
+            set {
+                this["IncludeMetadata"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IndexFileNames {
+            get {
+                return ((bool)(this["IndexFileNames"]));
+            }
+            set {
+                this["IndexFileNames"] = value;
+            }
+        }
     }
 }

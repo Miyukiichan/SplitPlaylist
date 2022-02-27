@@ -37,6 +37,8 @@
             this.tooltip = new System.Windows.Forms.ToolTip(this.components);
             this.cbVideoFormat = new System.Windows.Forms.ComboBox();
             this.lVideoFormat = new System.Windows.Forms.Label();
+            this.cMetadata = new System.Windows.Forms.CheckBox();
+            this.cIndexFiles = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // eYTCom
@@ -90,6 +92,8 @@
             // cDeleteExisting
             // 
             this.cDeleteExisting.AutoSize = true;
+            this.cDeleteExisting.Checked = true;
+            this.cDeleteExisting.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cDeleteExisting.Location = new System.Drawing.Point(328, 156);
             this.cDeleteExisting.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.cDeleteExisting.Name = "cDeleteExisting";
@@ -120,7 +124,7 @@
             // 
             this.bCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.bCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.bCancel.Location = new System.Drawing.Point(310, 210);
+            this.bCancel.Location = new System.Drawing.Point(323, 259);
             this.bCancel.Name = "bCancel";
             this.bCancel.Size = new System.Drawing.Size(94, 29);
             this.bCancel.TabIndex = 32;
@@ -131,7 +135,7 @@
             // 
             this.bOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.bOK.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.bOK.Location = new System.Drawing.Point(410, 210);
+            this.bOK.Location = new System.Drawing.Point(423, 259);
             this.bOK.Name = "bOK";
             this.bOK.Size = new System.Drawing.Size(94, 29);
             this.bOK.TabIndex = 33;
@@ -157,11 +161,39 @@
             this.lVideoFormat.TabIndex = 34;
             this.lVideoFormat.Text = "Video Format";
             // 
+            // cMetadata
+            // 
+            this.cMetadata.AutoSize = true;
+            this.cMetadata.Checked = true;
+            this.cMetadata.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cMetadata.Location = new System.Drawing.Point(167, 188);
+            this.cMetadata.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.cMetadata.Name = "cMetadata";
+            this.cMetadata.Size = new System.Drawing.Size(147, 24);
+            this.cMetadata.TabIndex = 36;
+            this.cMetadata.Text = "Include Metadata";
+            this.cMetadata.UseVisualStyleBackColor = true;
+            // 
+            // cIndexFiles
+            // 
+            this.cIndexFiles.AutoSize = true;
+            this.cIndexFiles.Checked = true;
+            this.cIndexFiles.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cIndexFiles.Location = new System.Drawing.Point(328, 188);
+            this.cIndexFiles.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.cIndexFiles.Name = "cIndexFiles";
+            this.cIndexFiles.Size = new System.Drawing.Size(144, 24);
+            this.cIndexFiles.TabIndex = 37;
+            this.cIndexFiles.Text = "Index File Names";
+            this.cIndexFiles.UseVisualStyleBackColor = true;
+            // 
             // Settings
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(516, 251);
+            this.ClientSize = new System.Drawing.Size(529, 300);
+            this.Controls.Add(this.cIndexFiles);
+            this.Controls.Add(this.cMetadata);
             this.Controls.Add(this.cbVideoFormat);
             this.Controls.Add(this.lVideoFormat);
             this.Controls.Add(this.bOK);
@@ -197,5 +229,7 @@
         private System.Windows.Forms.ToolTip tooltip;
         private System.Windows.Forms.ComboBox cbVideoFormat;
         private System.Windows.Forms.Label lVideoFormat;
+        private System.Windows.Forms.CheckBox cMetadata;
+        private System.Windows.Forms.CheckBox cIndexFiles;
     }
 }

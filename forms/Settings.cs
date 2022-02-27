@@ -23,6 +23,8 @@ namespace SplitPlaylist.forms {
         }
         public bool TimeOrdering { get => Properties.Settings.Default.TimeOrdering; }
         public bool DeleteExistingTracks { get => Properties.Settings.Default.DeleteExistingTracks; }
+        public bool IncludeMetadata { get => Properties.Settings.Default.IncludeMetadata; }
+        public bool IndexFileNames { get => Properties.Settings.Default.IndexFileNames; }
         public Settings() {
             InitializeComponent();
             MinimumSize = Size;
@@ -32,6 +34,8 @@ namespace SplitPlaylist.forms {
             eFFCom.Text = FFCommand;
             cUseTimeOrdering.Checked = TimeOrdering;
             cDeleteExisting.Checked = DeleteExistingTracks;
+            cMetadata.Checked = IncludeMetadata;
+            cIndexFiles.Checked = IndexFileNames;
             tooltip.SetToolTip(cbAudioFormat, "Sets the default audio file extesion - can be changed during operation");
             tooltip.SetToolTip(cbVideoFormat, "Sets the default video file extesion - can be changed during operation");
             tooltip.SetToolTip(cDeleteExisting, "If any files generated from splitting are already present, ticking this will replace the old files with the newly generated files");
@@ -46,6 +50,8 @@ namespace SplitPlaylist.forms {
             Properties.Settings.Default.FFCommand = eFFCom.Text;
             Properties.Settings.Default.TimeOrdering = cUseTimeOrdering.Checked;
             Properties.Settings.Default.DeleteExistingTracks = cDeleteExisting.Checked;
+            Properties.Settings.Default.IncludeMetadata = cMetadata.Checked;
+            Properties.Settings.Default.IndexFileNames = cIndexFiles.Checked;
             Properties.Settings.Default.Save();
         }
     }

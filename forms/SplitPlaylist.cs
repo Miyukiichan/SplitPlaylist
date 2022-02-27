@@ -21,19 +21,20 @@ namespace SplitPlaylist.forms
         }
         private void bGo_Click(object sender, EventArgs e)
         {
+            src.Splitter splitter = new()
+            {
+                URL = eSpURL.Text,
+                Artist = eArtist.Text,
+                Pattern = ePattern.Text,
+                Extension = cbSpExtension.Text,
+                IsURL = rbURL.Checked,
+                DeleteExisting = _settings.DeleteExistingTracks,
+                TimeOrdering = _settings.TimeOrdering,
+                YTCommand = _settings.YTCommand,
+                FFCommand = _settings.FFCommand,
+                IndexFileNames = _settings.IndexFileNames
+            };
             try {
-                src.Splitter splitter = new()
-                {
-                    URL = eSpURL.Text,
-                    Artist = eArtist.Text,
-                    Pattern = ePattern.Text,
-                    Extension = cbSpExtension.Text,
-                    IsURL = rbURL.Checked,
-                    DeleteExisting = _settings.DeleteExistingTracks,
-                    TimeOrdering = _settings.TimeOrdering,
-                    YTCommand = _settings.YTCommand,
-                    FFCommand = _settings.FFCommand
-                };
                 
                 //Prompt for file names
                 splitter.Tracks = CommonFormProc.GetLines(eTracks);
@@ -80,6 +81,8 @@ namespace SplitPlaylist.forms
             catch (Exception ex) {
                 MessageBox.Show(ex.Message);
             }
+            if (_settings.IncludeMetadata)
+                splitter.TagFiles();
         }
 
         private void rbURL_CheckedChanged(object sender, EventArgs e) {

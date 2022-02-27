@@ -4,8 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Globalization;
-using System.Security.Permissions;
-using System.Security.AccessControl;
+using TagLib;
 
 namespace SplitPlaylist.src {
     public class Track {
@@ -20,6 +19,7 @@ namespace SplitPlaylist.src {
         public string Artist { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
+        public string Path { get; set; }   
         public void SetVar(string VarName, string Value) {
             switch (VarName) {
                 case "$TRACK":
@@ -81,7 +81,10 @@ namespace SplitPlaylist.src {
         public bool TimeOrdering { get; set; }
         public string YTCommand { get; set; }
         public string FFCommand { get; set; }
+        public bool IndexFileNames { get; set; }
+        public List<Track> TrackList { get; set; }
         public List<Process> ProcessTracks() {
+            TrackList = new List<Track>();
             if (String.IsNullOrWhiteSpace(URL) || (!Uri.IsWellFormedUriString(URL, UriKind.Absolute) && IsURL))
                 throw new Exception("Must provide URL");
             var artists = Pattern.Contains("$ARTIST");
@@ -111,7 +114,7 @@ namespace SplitPlaylist.src {
                     case 2:
                         throw new Exception("Something went wrong with youtube-dl");
                 }
-                if (!File.Exists(SavePath))
+                if (!System.IO.File.Exists(SavePath))
                     throw new Exception("Something went wrong with youtube-dl");
             }
             else {
@@ -135,7 +138,7 @@ namespace SplitPlaylist.src {
                 tokens[^1] += c;
             }
             //Go through all the tokens and skip the bits of consistent text such as '-' chars and set track properties from the variables
-            List<Track> trackList = new();
+            TrackList = new List<Track>();
             foreach (var t in Tracks) {
                 var trackObj = new Track();
                 var track = t;
@@ -161,29 +164,35 @@ namespace SplitPlaylist.src {
                     }
                     track = track.Remove(0, readTo + 1);
                 }
-                trackList.Add(trackObj);
+                TrackList.Add(trackObj);
             }
             //The final track doesn't need an end time - will just continue to the end of the file
-            IEnumerable<Track> orderedTrackList = trackList;
+            IEnumerable<Track> orderedTrackList = TrackList;
             if (TimeOrdering)
-                orderedTrackList = trackList.OrderBy(t => t.StartTimeTime);
+                orderedTrackList = TrackList.OrderBy(t => t.StartTimeTime);
             if (!end) {
                 for (var i = 0; i < orderedTrackList.Count(); i++) {
                     if (i < orderedTrackList.Count() - 1)
                         orderedTrackList.ElementAt(i).SetVar("$END", orderedTrackList.ElementAt(i + 1).StartTime);
                 }
             }
+            TrackList = orderedTrackList.ToList();
             //Launch all the ffmpeg processes
             var processes = new List<Process>();
             for (var i = 0; i < orderedTrackList.Count(); i++) {
-                var zeros = new String('0', (int)Math.Log10(orderedTrackList.Count()) - (int)Math.Log10(i + 1));
                 var track = orderedTrackList.ElementAt(i);
                 var args = $"-i \"{SavePath}\" -ss {track.StartTime} ";
                 args += DeleteExisting ? "-y" : "-n";
                 if (!String.IsNullOrWhiteSpace(track.EndTime))
                     args += $" -t {track.Duration()}";
-                var filename = $"{zeros}{i + 1} - {track.TrackName}.{Extension}";
-                args += $" \"{Path.Combine(PathToSaveTo, filename)}\"";
+                var filename = $"{track.TrackName}.{Extension}";
+                if (IndexFileNames) {
+                    var zeros = new String('0', (int)Math.Log10(orderedTrackList.Count()) - (int)Math.Log10(i + 1));
+                    filename = $"{zeros}{i + 1} - {filename}";
+                }
+                string path = Path.Combine(PathToSaveTo, filename);
+                args += $" \"{path}\"";
+                track.Path = path;
                 var  process = new Process()
                 {
                     StartInfo = new ProcessStartInfo
@@ -212,8 +221,17 @@ namespace SplitPlaylist.src {
             }
             if (!IsURL)
                 return;
-            File.SetAttributes(SavePath, FileAttributes.Normal);
-            File.Delete(SavePath);
+            System.IO.File.SetAttributes(SavePath, FileAttributes.Normal);
+            System.IO.File.Delete(SavePath);
+        }
+        public void TagFiles() {
+            for (int i = 0; i < TrackList.Count; i++) {
+                var track = TrackList[i];
+                var file = TagLib.File.Create(track.Path);
+                file.Tag.Title = track.TrackName;
+                file.Tag.Track = (uint)i + 1;
+                file.Save();
+            }
         }
     }
 }
