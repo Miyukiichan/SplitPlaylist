@@ -120,8 +120,7 @@ namespace SplitPlaylist.src {
             else {
                 SavePath = URL;
             }
-            //AddDirectorySecurity(SavePath, "Users", FileSystemRights.FullControl, AccessControlType.Allow);
-            //Parse tokens from pattern - separate variables from bits of text, variables start with '$' and end with' '
+            //Parse tokens from pattern - separate variables from bits of text, variables start with '$'
             var tokens = new List<String>();
             var variable = false;
             foreach (var c in Pattern) {
@@ -129,7 +128,8 @@ namespace SplitPlaylist.src {
                     tokens.Add("");
                     variable = true;
                 }
-                else if (c == ' ' && variable) {
+                //Check if any var look like the current var with the next char - if not then stop considering it a var and go to the next token 
+                else if (variable && (!Variables.Where(t => t.Contains(tokens[^1] + c)).Any())) {
                     tokens.Add("");
                     variable = false;
                 }
@@ -145,12 +145,20 @@ namespace SplitPlaylist.src {
                 for (var i = 0; i < tokens.Count; i++) {
                     var token = tokens[i].ToUpper(); ;
                     var next = i == tokens.Count - 1 ? "" : tokens[i + 1];
+                    var tokenEnd = 1;
+                    if (next == " ") {
+                        if (!track.Contains('"'))
+                            throw new Exception("Track names must be enclosed in quotes");
+                        track = track.Remove(0, 1);
+                        tokenEnd = 2;
+                        next = "\"";
+                    }
                     var readTo = -1;
                     if (next == "")
                         readTo = track.Length - 1;
                     else {
                         if (token.StartsWith('$'))
-                            readTo = track.IndexOf(' ') - 1;
+                            readTo = track.IndexOf(next) - 1;
                         else
                             readTo = token.Length - 1;
                     }
@@ -160,9 +168,9 @@ namespace SplitPlaylist.src {
                     if (Variables.Contains(token)) {
                         for (var j = 0; j <= readTo; j++)
                             value += track[j];
-                        trackObj.SetVar(token, value);
+                        trackObj.SetVar(token, value.Trim());
                     }
-                    track = track.Remove(0, readTo + 1);
+                    track = track.Remove(0, readTo + tokenEnd);
                 }
                 TrackList.Add(trackObj);
             }
@@ -227,6 +235,7 @@ namespace SplitPlaylist.src {
         public void TagFiles() {
             for (int i = 0; i < TrackList.Count; i++) {
                 var track = TrackList[i];
+                if (!System.IO.File.Exists(track.Path)) continue;
                 var file = TagLib.File.Create(track.Path);
                 file.Tag.Title = track.TrackName;
                 file.Tag.Track = (uint)i + 1;
