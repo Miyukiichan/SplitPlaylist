@@ -143,15 +143,18 @@ namespace SplitPlaylist.src {
                 var trackObj = new Track();
                 var track = t;
                 for (var i = 0; i < tokens.Count; i++) {
-                    var token = tokens[i].ToUpper(); ;
+                    var token = tokens[i].ToUpper(); 
                     var next = i == tokens.Count - 1 ? "" : tokens[i + 1];
                     var tokenEnd = 1;
                     if (next == " ") {
                         if (!track.Contains('"'))
                             throw new Exception("Track names must be enclosed in quotes");
-                        track = track.Remove(0, 1);
-                        tokenEnd = 2;
-                        next = "\"";
+                        //If we leave next as a space, we will only read the first word of the quote enclosed string
+                        if (track[0] == '"') {
+                            next = "\"";
+                            track = track.Remove(0, 1);
+                            tokenEnd = 2;
+                        }
                     }
                     var readTo = -1;
                     if (next == "")
@@ -166,8 +169,10 @@ namespace SplitPlaylist.src {
                         throw new Exception($"Error parsing line [{track}] token error");
                     var value = "";
                     if (Variables.Contains(token)) {
-                        for (var j = 0; j <= readTo; j++)
-                            value += track[j];
+                        for (var j = 0; j <= readTo; j++) {
+                            if (track[j] != '"')
+                                value += track[j];
+                        }
                         trackObj.SetVar(token, value.Trim());
                     }
                     track = track.Remove(0, readTo + tokenEnd);
