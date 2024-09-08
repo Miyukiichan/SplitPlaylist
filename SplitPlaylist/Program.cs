@@ -8,19 +8,18 @@ if (options is null) return;
 if (string.IsNullOrWhiteSpace(options.File) && string.IsNullOrWhiteSpace(options.URL))
     throw new ArgumentNullException("Please provide either a file path or a YouTube URL to process");
 string[] tracks;
-tracks = File.ReadAllLines(options.Path);
+tracks = File.ReadAllLines(resolvePath(options.Path));
 var isURL = true;
 var url = options.URL;
 if (string.IsNullOrWhiteSpace(url)) {
-    url = options.File;
+    url = resolvePath(options.File);
     isURL = false;
 }
 var splitter = new Splitter {
     URL = url,
     IsURL = isURL,
-    PathToSaveTo = options.Output,
+    PathToSaveTo = resolvePath(options.Output),
     Pattern = options.Pattern,
-    SavePath = options.Path,
     YTCommand = options.YTPath,
     FFCommand = options.FFPath,
     Extension = options.Extension,
@@ -62,6 +61,12 @@ using (var progress = new ProgressBar(totalTicks, $"Processing tracks {finished.
 Console.WriteLine("Cleaning up");
 splitter.Cleanup(finished);
 Console.WriteLine("Done!");
+
+string resolvePath(string path) {
+    return path
+        .Replace("~", Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+        .Replace("//", "/");
+}
 
 class Options {
     [Option('u', "url", Required = false, HelpText = "YouTube URL to download and process")]
